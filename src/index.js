@@ -1,6 +1,29 @@
-function pissjar() {
-    return "shitpiss"
+const mongoose = require('mongoose');
+require("dotenv").config();
+mongoose.connect(process.env.MONGO_HOST);
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+var Test
+db.once('open', function() {
+  const testSchema = new mongoose.Schema({
+	commandOutput: String
+  });
+  Test = mongoose.model('test', testSchema);
+});
+
+function pissjar(cb) {
+    Test.find({}, function(err, tests) {
+        if (err) return console.error(err);
+        cb(tests[0]);
+    });
+}
+function create(input) {
+    let test = new Test({
+        commandOutput: input
+    });
+    test.save();
 }
 module.exports = {
-    api: {pissjar}
+    api: {pissjar, create}
 }
