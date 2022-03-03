@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); //among goose
 require("dotenv").config();
 mongoose.connect(process.env.MONGO_HOST);
 
