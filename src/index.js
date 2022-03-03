@@ -24,6 +24,13 @@ function create(input) {
     });
     test.save();
 }
+function edit(input) {
+    Test.find({}, function(err, tests) {
+        if (err) return console.error(err);
+        tests[0].commandOutput = input;
+        tests[0].save();
+    });
+}
 module.exports = {
-    api: {pissjar, create}
+    api: {pissjar, create, edit}
 }
