@@ -7,5 +7,7 @@
     "apis": {
         "db": "src/index.js"
     },
-    "entrypoints": {}
+    "entrypoints": {
+        "thiscommanddoesntexist": "src/no.js"
+    }
 }
