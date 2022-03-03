@@ -6,5 +6,6 @@
     "min_pain_version": "1.0.0",
     "apis": {
         "db": "src/index.js"
-    }
+    },
+    "entrypoints": {}
 }
