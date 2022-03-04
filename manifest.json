@@ -9,5 +9,6 @@
     },
     "entrypoints": {
         "thiscommanddoesntexist": "src/no.js"
-    }
+    },
+    "eventHandlers": ["messageCreate"]
 }
