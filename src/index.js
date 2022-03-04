@@ -30,6 +30,16 @@ function getUser(discordId, cb) {
     });
 }
 
+function getGroups(idArray, cb) {
+    PermGroup.find({$in: {_id: idArray}}, (err, groups) => {
+        if (err) {
+            apis["core-error"].api.error(err);
+            return cb(null);
+        }
+        return cb(groups);
+    })
+}
+
 function foc(discordId, message) {
     User.countDocuments({discordId: discordId}, function(err, count) {
         if (err) {
@@ -64,6 +74,6 @@ function onMessage(message) {
 }
 
 module.exports = {
-    api: {getUser},
+    api: {getUser, getGroups},
     onMessage
 }
