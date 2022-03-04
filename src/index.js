@@ -17,7 +17,7 @@ db.once('open', function() {
 	permissions: Object
   });
   User = mongoose.model('user', userSchema);
-  PermGroup = mongoose.model('permGroups', groupSchema);
+  PermGroup = mongoose.model('permGroup', groupSchema);
 });
 
 function getUser(discordId, cb) {
