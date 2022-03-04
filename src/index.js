@@ -60,7 +60,7 @@ function foc(discordId, message) {
 }
 
 function onMessage(message) {
-    if(message.author.bot || !message.startsWith(config.prefix)) return;
+    if(message.author.bot || !message.content.startsWith(config.prefix)) return;
     foc(message.author.id, message);
 }
 
