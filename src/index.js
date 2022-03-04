@@ -24,7 +24,6 @@ function getUser(discordId, cb) {
     User.findOne({discordId: discordId}, function(err, user) {
         if (err) {
             apis["core-error"].api.error(err);
-            message.channel.send("error happen, some features may not work right")
             return null;
         }
         cb(user);
