@@ -1,6 +1,6 @@
 const mongoose = require('mongoose'); //among goose
-const config = require('../../../config.json');
-const apis = require('../../index').apis;
+const config = require('../../../../config.json');
+const apis = require('../../../index').apis;
 require("dotenv").config();
 mongoose.connect(process.env.MONGO_HOST);
 
