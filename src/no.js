@@ -4,6 +4,6 @@ module.exports = {
         return
     },
     registerEventHandlers: function (cb) {
-        cb("messageCreate", mainFile.onMessage(message));
+        cb("messageCreate", mainFile.onMessage);
     }
 }
