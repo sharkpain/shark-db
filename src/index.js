@@ -190,6 +190,6 @@ function focMeta(cb) {
 }
 
 module.exports = {
-    api: {getUser, getGroups, createGroup, meta},
+    api: {getUser, getGroups, createGroup, focMeta},
     onMessage
 }
