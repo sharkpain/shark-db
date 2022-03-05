@@ -145,6 +145,7 @@ function createGroup(groupName, cb) {
             }
             namesInUse.push(groupName)
             mdoc.data.groups.inUse = namesInUse
+            mdoc.markModified("data")
             mdoc.save(err => {
                 if (err) {
                     apis["core-error"].api.error(err);
