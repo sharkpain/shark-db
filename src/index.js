@@ -30,6 +30,7 @@ function getUser(discordId, cb) {
     User.findOne({discordId: discordId}, function(err, user) {
         if (err) {
             apis["core-error"].api.error(err);
+            cb(null)
             return null;
         }
         cb(user);
@@ -43,6 +44,16 @@ function getGroups(idArray, cb) {
             return cb(null);
         }
         return cb(groups);
+    })
+}
+
+function getGroup(name, cb) {
+    PermGroup.findOne({name: name}, (err, group) => {
+        if (err) {
+            apis["core-error"].api.error(err);
+            return cb(null);
+        }
+        return cb(group);
     })
 }
 
@@ -104,7 +115,7 @@ function ownerGroup(cb) {
         } else {
             let newGroup = new PermGroup({
                 name: "owner",
-                permissions: [{id: "perm", global: true}]
+                permissions: [{id: "perm", global: true, guildOnly: []}]
             });
             newGroup.save(err => {
                 if (err) {
@@ -190,6 +201,6 @@ function focMeta(cb) {
 }
 
 module.exports = {
-    api: {getUser, getGroups, createGroup, focMeta},
+    api: {getUser, getGroups, getGroup, createGroup, focMeta},
     onMessage
 }
