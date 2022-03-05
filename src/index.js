@@ -149,8 +149,8 @@ function createGroup(groupName, cb) {
                 })
             }
             namesInUse = udata.inUse;
-            if(namesInUse.includes(groupName)) return cb("ERR_INUSE")
             if(nameBlacklist.includes(groupName)) return cb("ERR_BLACKLISTED")
+            if(namesInUse.includes(groupName)) return cb("ERR_INUSE")
             let newGroup = new PermGroup({
                 name: groupName,
                 permissions: []
