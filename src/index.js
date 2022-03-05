@@ -7,7 +7,8 @@ mongoose.connect(process.env.MONGO_HOST);
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 var User,
-    PermGroup
+    PermGroup,
+    Meta
 db.once('open', function() {
   const userSchema = new mongoose.Schema({
     discordId: String,
@@ -17,8 +18,12 @@ db.once('open', function() {
 	permissions: Object,
     name: String
   });
+  const metaSchema = new mongoose.Schema({
+	data: Object
+  });
   User = mongoose.model('user', userSchema);
   PermGroup = mongoose.model('permGroup', groupSchema);
+  Meta = mongoose.model('meta', metaSchema)
 });
 
 function getUser(discordId, cb) {
@@ -117,7 +122,111 @@ function onMessage(message) {
     foc(message.author.id, message);
 }
 
+function createGroup(groupName, cb) {
+    let nameBlacklist
+    let namesInUse
+    meta("get", {key: "groups"}, bdata => {
+        if(!bdata) {
+            return cb("ERR_DBFAIL")
+        }
+        if(!bdata.blacklist) {
+            let newValue = bdata;
+            newValue.blacklist = ["owner"]
+            meta("set", {key: "groups", value: newValue}, bdata => {
+                nameBlacklist = bdata.blacklist;
+            })
+        }
+        nameBlacklist = bdata.blacklist;
+        meta("get", {key: "groups"}, udata => {
+            if(!udata) {
+                return cb("ERR_DBFAIL")
+            }
+            if(!udata.inUse) {
+                let newValue = udata;
+                newValue.inUse = ["owner"]
+                meta("set", {key: "groups", value: newValue}, udata => {
+                    namesInUse = udata.inUse;
+                })
+            }
+            namesInUse = udata.inUse;
+            if(namesInUse.includes(groupName)) return cb("ERR_INUSE")
+            if(nameBlacklist.includes(groupName)) return cb("ERR_BLACKLISTED")
+            let newGroup = new PermGroup({
+                name: groupName,
+                permissions: []
+            });
+            newGroup.save(err => {
+                let newValue = udata
+                namesInUse.push(groupName)
+                newValue.inUse = namesInUse
+                meta("set", {key: "groups", value: newValue}, data => {
+                    if (err) {
+                        apis["core-error"].api.error(err);
+                        return cb("ERR_DBFAIL")
+                    }
+                    cb(newGroup);
+                })
+            });
+        })
+    })
+    
+}
+
+function meta(action, data, cb) {
+    Meta.countDocuments({}, (err, count) => {
+        if (err) {
+            apis["core-error"].api.error(err);
+            return cb(null);
+        }
+        if (count > 1) {
+            apis["core-error"].api.error("MORE THAN 1 META DOCUMENT. THIS IS NOT SUPPOSED TO HAPPEN");
+            return process.exit(1);
+        }
+        if(count != 1) {
+            let newMeta = new Meta({
+                data: {}
+            });
+            newMeta.save(err => {
+                if (err) {
+                    apis["core-error"].api.error(err);
+                    return cb(null);
+                }
+                metap(newMeta, action, data, cb);
+            });
+        } else {
+            Meta.findOne({}, (err, meta) => {
+                if (err) {
+                    apis["core-error"].api.error(err);
+                    return cb(null);
+                }
+                metap(meta, action, data, cb);
+            });
+        }
+    });
+}
+
+function metap(mdoc, action, data, cb) {
+    switch(action) {
+        case "get":
+            if(!mdoc.data[data.key]) mdoc.data[data.key] = {};
+            break;
+        case "set":
+            if(!mdoc.data[data.key]) mdoc.data[data.key] = data.value;
+            mdoc.data[data.key] = data.value;
+            break;
+    }
+    mdoc.markModified("data");
+    mdoc.save(err => {
+        if (err) {
+            apis["core-error"].api.error(err);
+            cb(null)
+        } else {
+            cb(mdoc.data[data.key]);
+        }
+    })
+}
+
 module.exports = {
-    api: {getUser, getGroups},
+    api: {getUser, getGroups, createGroup, meta},
     onMessage
 }
