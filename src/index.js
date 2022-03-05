@@ -60,7 +60,15 @@ function foc(discordId, message) {
                         return null;
                     }
                     newUser.permissions.groups.push(group);
+                    newUser.save(err => {
+                        if (err) {
+                            apis["core-error"].api.error(err);
+                            message.channel.send("error happen, some features may not work right");
+                            return null;
+                        }
+                    });
                 })
+                
             } else {
                 newUser.save(err => {
                     if (err) {
@@ -90,10 +98,7 @@ function ownerGroup(cb) {
         } else {
             let newGroup = new PermGroup({
                 name: "owner",
-                permissions: {
-                    groups: [],
-                    permissions: [{id: "perm", global: true}]
-                }
+                permissions: [{id: "perm", global: true}]
             });
             newGroup.save(err => {
                 if (err) {
