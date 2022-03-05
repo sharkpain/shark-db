@@ -125,54 +125,38 @@ function onMessage(message) {
 function createGroup(groupName, cb) {
     let nameBlacklist
     let namesInUse
-    meta("get", {key: "groups"}, bdata => {
-        if(!bdata) {
-            return cb("ERR_DBFAIL")
-        }
-        if(!bdata.blacklist) {
-            let newValue = bdata;
-            newValue.blacklist = ["owner"]
-            meta("set", {key: "groups", value: newValue}, bdata => {
-                nameBlacklist = bdata.blacklist;
-            })
-        }
-        nameBlacklist = bdata.blacklist;
-        meta("get", {key: "groups"}, udata => {
-            if(!udata) {
+    focMeta(mdoc => {
+        if (!mdoc)  return cb("ERR_DBFAIL")
+        if (!mdoc.data.groups) mdoc.data.groups = {}
+        if (!mdoc.data.groups.blacklist) mdoc.data.groups.blacklist = ["owner"]
+        if (!mdoc.data.groups.inUse) mdoc.data.groups.inUse = []
+        nameBlacklist = mdoc.data.groups.blacklist;
+        namesInUse = mdoc.data.groups.inUse;
+        if (nameBlacklist.includes(groupName)) return cb("ERR_BLACKLISTED")
+        if (namesInUse.includes(groupName)) return cb("ERR_INUSE")
+        let newGroup = new PermGroup({
+            name: groupName,
+            permissions: []
+        });
+        newGroup.save(err => {
+            if (err) {
+                apis["core-error"].api.error(err);
                 return cb("ERR_DBFAIL")
             }
-            if(!udata.inUse) {
-                let newValue = udata;
-                newValue.inUse = ["owner"]
-                meta("set", {key: "groups", value: newValue}, udata => {
-                    namesInUse = udata.inUse;
-                })
-            }
-            namesInUse = udata.inUse;
-            if(nameBlacklist.includes(groupName)) return cb("ERR_BLACKLISTED")
-            if(namesInUse.includes(groupName)) return cb("ERR_INUSE")
-            let newGroup = new PermGroup({
-                name: groupName,
-                permissions: []
-            });
-            newGroup.save(err => {
-                let newValue = udata
-                namesInUse.push(groupName)
-                newValue.inUse = namesInUse
-                meta("set", {key: "groups", value: newValue}, data => {
-                    if (err) {
-                        apis["core-error"].api.error(err);
-                        return cb("ERR_DBFAIL")
-                    }
-                    cb(newGroup);
-                })
-            });
-        })
+            namesInUse.push(groupName)
+            mdoc.data.groups.inUse = namesInUse
+            mdoc.save(err => {
+                if (err) {
+                    apis["core-error"].api.error(err);
+                    return cb("ERR_DBFAIL")
+                }
+                cb(newGroup);
+            })
+        });
     })
-    
 }
 
-function meta(action, data, cb) {
+function focMeta(cb) {
     Meta.countDocuments({}, (err, count) => {
         if (err) {
             apis["core-error"].api.error(err);
@@ -190,7 +174,7 @@ function meta(action, data, cb) {
                     apis["core-error"].api.error(err);
                     return cb(null);
                 }
-                metap(newMeta, action, data, cb);
+                cb(newMeta);
             });
         } else {
             Meta.findOne({}, (err, meta) => {
@@ -198,31 +182,10 @@ function meta(action, data, cb) {
                     apis["core-error"].api.error(err);
                     return cb(null);
                 }
-                metap(meta, action, data, cb);
+                cb(meta)
             });
         }
     });
-}
-
-function metap(mdoc, action, data, cb) {
-    switch(action) {
-        case "get":
-            if(!mdoc.data[data.key]) mdoc.data[data.key] = {};
-            break;
-        case "set":
-            if(!mdoc.data[data.key]) mdoc.data[data.key] = data.value;
-            mdoc.data[data.key] = data.value;
-            break;
-    }
-    mdoc.markModified("data");
-    mdoc.save(err => {
-        if (err) {
-            apis["core-error"].api.error(err);
-            cb(null)
-        } else {
-            cb(mdoc.data[data.key]);
-        }
-    })
 }
 
 module.exports = {
