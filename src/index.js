@@ -179,8 +179,7 @@ function meta(action, data, cb) {
             return cb(null);
         }
         if (count > 1) {
-            apis["core-error"].api.error("MORE THAN 1 META DOCUMENT. THIS IS NOT SUPPOSED TO HAPPEN");
-            return process.exit(1);
+            return apis["core-error"].api.error("MORE THAN 1 META DOCUMENT. THIS IS NOT SUPPOSED TO HAPPEN");
         }
         if(count != 1) {
             let newMeta = new Meta({
