@@ -14,7 +14,8 @@ db.once('open', function() {
 	permissions: Object
   });
   const groupSchema = new mongoose.Schema({
-	permissions: Object
+	permissions: Object,
+    name: String
   });
   User = mongoose.model('user', userSchema);
   PermGroup = mongoose.model('permGroup', groupSchema);
