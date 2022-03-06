@@ -248,7 +248,28 @@ function frCol() {
     return Fr
 } 
 
+function addFr(trigger, content, discordId, cb) {
+    foc(discordId, user => {
+        if (user.fr.banned) return cb("ERR_BANNED");
+        let newFr = new Fr({
+            trigger: trigger,
+            content: content,
+            global: user.fr.global,
+            forcedUnglobal: user.fr.forcedUnglobal,
+            response: content,
+            creator: discordId
+        });
+        newFr.save(err => {
+            if (err) {
+                apis["core-error"].api.error(err);
+                return cb("ERR_DBFAIL");
+            }
+            cb(newFr);
+        });
+    })
+}
+
 module.exports = {
-    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, frCol},
+    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, frCol, addFr},
     onMessage
 }
