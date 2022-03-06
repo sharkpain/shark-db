@@ -232,6 +232,6 @@ function incrementFr(frId) {
 }
 
 module.exports = {
-    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr},
+    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, Fr},
     onMessage
 }
