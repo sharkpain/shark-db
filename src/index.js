@@ -13,7 +13,8 @@ var User,
 db.once('open', function() {
   const userSchema = new mongoose.Schema({
     discordId: String,
-	permissions: Object
+	permissions: Object,
+    fr: Object
   });
   const groupSchema = new mongoose.Schema({
 	permissions: Object,
@@ -26,7 +27,7 @@ db.once('open', function() {
 	creator: String,
     trigger: String,
     response: String,
-    timesTriggered: Number,
+    timesTriggered: {type: Number, default: 0},
     global: Boolean,
     forcedUnglobal: Boolean
   });
@@ -67,12 +68,11 @@ function getGroup(name, cb) {
     })
 }
 
-function foc(discordId, message) {
+function foc(discordId, cb) {
     User.countDocuments({discordId: discordId}, function(err, count) {
         if (err) {
             apis["core-error"].api.error(err);
-            message.channel.send("error happen, some features may not work right");
-            return null;
+            return cb(null);
         }
         if(count < 1) {
             let newUser = new User({
@@ -83,16 +83,15 @@ function foc(discordId, message) {
                 ownerGroup(group => {
                     if (!group) {
                         apis["core-error"].api.error(err);
-                        message.channel.send("check ur dms idot, error hit the shitter");
-                        return null;
+                        return cb(null);
                     }
                     newUser.permissions.groups.push(group);
                     newUser.save(err => {
                         if (err) {
                             apis["core-error"].api.error(err);
-                            message.channel.send("error happen, some features may not work right");
-                            return null;
+                            return cb(null);
                         }
+                        cb(newUser)
                     });
                 })
                 
@@ -100,15 +99,15 @@ function foc(discordId, message) {
                 newUser.save(err => {
                     if (err) {
                         apis["core-error"].api.error(err);
-                        message.channel.send("error happen, some features may not work right");
-                        return null;
+                        return cb(null);
                     }
+                    cb(newUser)
                 });
             }
         } else {
             getUser(discordId, user => {
-                if(!user) return null;
-                return user;
+                if(!user) return cb(null);
+                cb(user);
             })
         }
     });
@@ -140,7 +139,7 @@ function ownerGroup(cb) {
 
 function onMessage(message) {
     if(message.author.bot || !message.content.startsWith(config.prefix)) return;
-    foc(message.author.id, message);
+    foc(message.author.id, user => {});
 }
 
 function createGroup(groupName, cb) {
@@ -232,6 +231,6 @@ function incrementFr(frId) {
 }
 
 module.exports = {
-    api: {getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr},
+    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr},
     onMessage
 }
