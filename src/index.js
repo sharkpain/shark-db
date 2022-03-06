@@ -29,7 +29,8 @@ db.once('open', function() {
     response: String,
     timesTriggered: {type: Number, default: 0},
     global: Boolean,
-    forcedUnglobal: Boolean
+    forcedUnglobal: Boolean,
+    disabled: Boolean
   });
   User = mongoose.model('user', userSchema);
   PermGroup = mongoose.model('permGroup', groupSchema);
@@ -215,7 +216,7 @@ function getFrs(cb) {
             apis["core-error"].api.error(err);
             return cb("ERR");
         }
-        return cb(frs);
+        return cb(frs.filter(fr => !fr.disabled));
     })
 }
 
