@@ -14,7 +14,7 @@ db.once('open', function() {
   const userSchema = new mongoose.Schema({
     discordId: String,
 	permissions: Object,
-    fr: Object
+    fr: {type: Object, default: {}}
   });
   const groupSchema = new mongoose.Schema({
 	permissions: Object,
@@ -231,7 +231,24 @@ function incrementFr(frId) {
     })
 }
 
+function addPropertyEO(property, cb) {
+    User.find({}, (err, users) => {
+        if (err) {
+            apis["core-error"].api.error(err);
+            return cb(false);
+        }
+        users.forEach(user => {
+            if (!user[property]) user[property] = {};
+            user.save();
+        })
+    });
+} 
+
+function frCol() {
+    return Fr
+} 
+
 module.exports = {
-    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, Fr},
+    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, frCol},
     onMessage
 }
