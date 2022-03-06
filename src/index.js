@@ -269,7 +269,13 @@ function addFr(trigger, content, discordId, cb) {
     })
 }
 
+function deleteFr(frId, cb) {
+    Fr.deleteOne({_id: frId}, (err, deletedCount) => {
+        cb(err)
+    });
+}
+
 module.exports = {
-    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, frCol, addFr},
+    api: {foc, getUser, getGroups, getGroup, createGroup, focMeta, getFrs, incrementFr, frCol, addFr, deleteFr},
     onMessage
 }
